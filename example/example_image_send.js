@@ -5,6 +5,7 @@ const multer = require('multer')
 router.get('/', (req, res) => {
     console.log('hello log')
     res.send('Hello, World!')
+    // res.sendFile('./index.html');
 });
 
 const storage = multer.diskStorage({
