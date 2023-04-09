@@ -7,7 +7,7 @@ router.get('/', (req, res) => {
 
 
 // 웹소켓을 정의한 코드
-const wss = require('../socket/ws_python');
+const wss = require('../socket/websocket');
 
 // 소켓 이벤트를 발생시키는 api입니다.
 const WebSocket = require('ws');
@@ -22,7 +22,7 @@ router.get('/test_py', async (req, res) => {
     // Send a WebSocket message to all connected clients
     wss.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
-            client.send('New data available!');
+            client.send('server send 웹캠 이미지 전달!');
         }
     });
 });

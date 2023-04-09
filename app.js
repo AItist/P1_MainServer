@@ -10,7 +10,7 @@ app.set('port', 3000);
 
 // 소켓 관련 이벤트를 발생시키는 라우터
 const socket_events = require('./routes/socket_events');
-app.use('/ws_events', socket_events);
+app.use('/ws', socket_events);
 
 // [x] : 외부에서 이미지를 받게 된다. socket_events /test_py 에 관련코드
 // [x] : socket_events /test_py 에서 받은 이미지를 바로 웹소켓으로 보낸다. 
