@@ -20,6 +20,10 @@ app.use('/ws', socket_events);
 // [ ] : socket/ws_python 웹소켓으로 연결된 python ai processor에서 이미지를 다시 서버로 준다.
 // [ ] : 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
 
+app.get('/', (req, res) => {
+    res.send('Hello, Express');
+});
+
 app.listen(app.get('port'), () => {
     console.log('Server started on port', app.get('port'));
 });

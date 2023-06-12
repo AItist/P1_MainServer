@@ -33,9 +33,10 @@ router.get('/test_py', async (req, res) => {
     });
 });
 
+// 11 : webcam 이미지를 받는 api입니다.
 router.post('/data', async (req, res) => {
     const data = req.body;
-    console.log(data); // { index: 0, ret: true, frame: [too large]}
+    // console.log(data); // { index: 0, ret: true, frame: [too large]}
 
 
     // // Send a WebSocket message to all connected clients
