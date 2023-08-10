@@ -145,7 +145,7 @@ wss3_unity_object_maker.on('connection', (ws, req) => {
 
         // TODO: 2차 메인 유니티 프로젝트로 전달
         // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
-        wss5_unity_main.clients.forEach(function each(client) {
+        wss4_python_img_merge.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(message);
             }
