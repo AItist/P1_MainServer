@@ -13,6 +13,7 @@ const wss4_python_img_merge = new WebSocket.Server({ port: p4_python_img_merge_p
 const wss5_unity_main = new WebSocket.Server({ port: p5_unity_main_port });
 
 let packet = {};
+let p3_packet = {};
 
 // 11 : webcam 이미지를 받는 웹소켓 연결시
 wss1_cam_ai.on('connection', (ws, req) => {
@@ -139,15 +140,24 @@ wss3_unity_object_maker.on('connection', (ws, req) => {
     // Send a welcome message to the client
     ws.send('Welcome to the WebSocket server! ', p3_unity_obj_maker_port);
     ws.on('message', (message) => {
-        // 클라에서 데이터 전달받음
-        // const _time = new Date();
-        // console.log(`object-maker >> main [${_time}]`);
 
-        // TODO: 2차 메인 유니티 프로젝트로 전달
-        // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
+        // let packet_data = JSON.stringify(packet);
+        const chunkSize = 1000; // 글자수 n 단위로 분할
+
+        // 1. 받은 이미지를 python image merge 웹소켓으로 전달한다.
         wss4_python_img_merge.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
+                // client.send(message);
+                for (let i = 0; i < message.length; i += chunkSize) {
+                    const chunk = message.slice(i, i + chunkSize);
+                    client.send(JSON.stringify({chunk: chunk, last: i + chunkSize >= message.length}));
+                }
+            }
+            else if (client.readyState === WebSocket.CLOSED) {
+                console.log('client closed');
+            }
+            else if (client.readyState === WebSocket.CLOSING) {
+                console.log('client closing');
             }
         });
     });
