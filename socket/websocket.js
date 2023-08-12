@@ -5,12 +5,14 @@ const p2_python_pose_merge_port = 8071;
 const p3_unity_obj_maker_port = 8072;
 const p4_python_img_merge_port = 8073;
 const p5_unity_main_port = 8074;
+const p6_unity_main2_port = 8075;
 
 const wss1_cam_ai = new WebSocket.Server({ port: p1_cam_ai_port });
 const wss2_python_pose_merge = new WebSocket.Server({ port: p2_python_pose_merge_port });
 const wss3_unity_object_maker = new WebSocket.Server({ port: p3_unity_obj_maker_port });
 const wss4_python_img_merge = new WebSocket.Server({ port: p4_python_img_merge_port });
 const wss5_unity_main = new WebSocket.Server({ port: p5_unity_main_port });
+const wss6_unity_main2 = new WebSocket.Server({ port: p6_unity_main2_port });
 
 let packet = {};
 let p3_packet = {};
@@ -202,6 +204,33 @@ wss4_python_img_merge.on('connection', (ws, req) => {
 
 // 메인 Unity 웹소켓 연결시
 wss5_unity_main.on('connection', (ws, req) => {
+
+    const ip = req.headers;
+    console.log('Unity Main WebSocket client connected', ip['host']);
+
+    // Send a welcome message to the client
+    ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
+    ws.on('message', (message) => {
+        // 클라에서 데이터 전달받음
+        // console.log('message', message.toString());
+        console.log('hello');
+        wss6_unity_main2.clients.forEach(function each(client) {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    });
+
+    ws.on('error', (error) => {
+        console.error('error', error);
+    });
+    ws.on('close', () => {
+        console.log('Unity Main Websocket Client disconnected ', ip['host']);
+    });
+});
+
+// 메인 Unity 웹소켓 연결시
+wss6_unity_main2.on('connection', (ws, req) => {
 
     const ip = req.headers;
     console.log('Unity Main WebSocket client connected', ip['host']);
