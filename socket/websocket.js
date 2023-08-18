@@ -17,6 +17,48 @@ const wss6_unity_main2 = new WebSocket.Server({ port: p6_unity_main2_port });
 let packet = {};
 let p3_packet = {};
 
+let funcInterval = 300
+
+function periodicTask() {
+    // console.log('This function runs every 1 seconds!');
+
+    if (!packet.hasOwnProperty('indexes')) {
+        // console.log('테스트 조건: indexes가 없습니다.');
+        return;
+    }
+
+    // 웹소켓 연결
+    if (packet['indexes'].length >= 1) {
+        console.log('테스트 조건: 1개 이상의 데이터가 모였습니다.');
+
+        // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
+        let packet_data = JSON.stringify(packet);
+        // let packet_data = "Test packet data";
+        const chunkSize = 1000; // 글자수 n 단위로 분할
+
+        packet['indexes'].sort((a, b) => a - b);
+        wss2_python_pose_merge.clients.forEach(function each(client) {
+            if (client.readyState === WebSocket.OPEN) {
+                for (let i = 0; i < packet_data.length; i += chunkSize) {
+                    const chunk = packet_data.slice(i, i + chunkSize);
+                    client.send(JSON.stringify({chunk: chunk, last: i + chunkSize >= packet_data.length}));
+                }
+                // client.send(packet_data);
+            }
+            else if (client.readyState === WebSocket.CLOSED) {
+                console.log('client closed');
+            }
+            else if (client.readyState === WebSocket.CLOSING) {
+                console.log('client closing');
+            }
+        });
+
+        packet = {};
+    }
+}
+
+setInterval(periodicTask, funcInterval);
+
 // 11 : webcam 이미지를 받는 웹소켓 연결시
 wss1_cam_ai.on('connection', (ws, req) => {
 
@@ -59,41 +101,34 @@ wss1_cam_ai.on('connection', (ws, req) => {
         }
         console.log(`${packet['indexes']}, ${packet['indexes'].length}`);
 
-        // 웹소켓 연결
-        if (packet['indexes'].length >= 1) {
-            console.log('테스트 조건: 2개 이상의 데이터가 모였습니다.');
+        // // 웹소켓 연결
+        // if (packet['indexes'].length >= 1) {
+        //     console.log('테스트 조건: 2개 이상의 데이터가 모였습니다.');
 
-            // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
-            let packet_data = JSON.stringify(packet);
-            // let packet_data = "Test packet data";
-            const chunkSize = 1000; // 글자수 n 단위로 분할
+        //     // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
+        //     let packet_data = JSON.stringify(packet);
+        //     // let packet_data = "Test packet data";
+        //     const chunkSize = 1000; // 글자수 n 단위로 분할
 
-            packet['indexes'].sort((a, b) => a - b);
-            wss2_python_pose_merge.clients.forEach(function each(client) {
-                if (client.readyState === WebSocket.OPEN) {
-                    for (let i = 0; i < packet_data.length; i += chunkSize) {
-                        const chunk = packet_data.slice(i, i + chunkSize);
-                        client.send(JSON.stringify({chunk: chunk, last: i + chunkSize >= packet_data.length}));
-                    }
-                    // client.send(packet_data);
-                }
-                else if (client.readyState === WebSocket.CLOSED) {
-                    console.log('client closed');
-                }
-                else if (client.readyState === WebSocket.CLOSING) {
-                    console.log('client closing');
-                }
-            });
+        //     packet['indexes'].sort((a, b) => a - b);
+        //     wss2_python_pose_merge.clients.forEach(function each(client) {
+        //         if (client.readyState === WebSocket.OPEN) {
+        //             for (let i = 0; i < packet_data.length; i += chunkSize) {
+        //                 const chunk = packet_data.slice(i, i + chunkSize);
+        //                 client.send(JSON.stringify({chunk: chunk, last: i + chunkSize >= packet_data.length}));
+        //             }
+        //             // client.send(packet_data);
+        //         }
+        //         else if (client.readyState === WebSocket.CLOSED) {
+        //             console.log('client closed');
+        //         }
+        //         else if (client.readyState === WebSocket.CLOSING) {
+        //             console.log('client closing');
+        //         }
+        //     });
 
-            packet = {};
-        }
-
-        // // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
-        // wss_python.clients.forEach(function each(client) {
-        //     if (client.readyState === WebSocket.OPEN) {
-        //         client.send(message.toString());
-        //     }
-        // });
+        //     packet = {};
+        // }
     });
 
     ws.on('error', (error) => {
@@ -181,12 +216,7 @@ wss4_python_img_merge.on('connection', (ws, req) => {
     // Send a welcome message to the client
     ws.send('Welcome to the WebSocket server! ', p4_python_img_merge_port);
     ws.on('message', (message) => {
-        // 클라에서 데이터 전달받음
-        // const _time = new Date();
-        // console.log(`object-maker >> main [${_time}]`);
 
-        // TODO: 2차 메인 유니티 프로젝트로 전달
-        // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
         wss5_unity_main.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(message);
@@ -198,22 +228,19 @@ wss4_python_img_merge.on('connection', (ws, req) => {
         console.error('error', error);
     });
     ws.on('close', () => {
-        console.log('Unity Object-maker Websocket Client disconnected ', ip['host']);
+        console.log('python image merger WebSocket client disconnected ', ip['host']);
     });
 });
 
 // 메인 Unity 웹소켓 연결시
 wss5_unity_main.on('connection', (ws, req) => {
-
     const ip = req.headers;
     console.log('Unity Main WebSocket client connected', ip['host']);
 
     // Send a welcome message to the client
     ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
     ws.on('message', (message) => {
-        // 클라에서 데이터 전달받음
-        // console.log('message', message.toString());
-        console.log('hello');
+        // console.log('hello');
         wss6_unity_main2.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(message);
@@ -229,16 +256,15 @@ wss5_unity_main.on('connection', (ws, req) => {
     });
 });
 
-// 메인 Unity 웹소켓 연결시
+// 메인2 Unity 웹소켓 연결시
 wss6_unity_main2.on('connection', (ws, req) => {
 
     const ip = req.headers;
-    console.log('Unity Main WebSocket client connected', ip['host']);
+    console.log('Unity Main2 WebSocket client connected', ip['host']);
 
     // Send a welcome message to the client
     ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
     ws.on('message', (message) => {
-        // 클라에서 데이터 전달받음
         console.log('message', message.toString());
     });
 
@@ -246,7 +272,7 @@ wss6_unity_main2.on('connection', (ws, req) => {
         console.error('error', error);
     });
     ws.on('close', () => {
-        console.log('Unity Main Websocket Client disconnected ', ip['host']);
+        console.log('Unity Main2 Websocket Client disconnected ', ip['host']);
     });
 });
 
