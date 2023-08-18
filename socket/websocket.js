@@ -68,12 +68,6 @@ wss1_cam_ai.on('connection', (ws, req) => {
     // Send a welcome message to the client
     ws.send('Welcome to the WebSocket server! ', p1_cam_ai_port);
     ws.on('message', (message) => {
-        // 클라에서 데이터 전달받음
-        // const _time = new Date();
-        // console.log(`cam_ai >> python [${_time}]`);
-
-        // console.log('message', message.toString())
-        // console.log('wss_cam_ai message on');
 
         let jsonData = JSON.parse(message.toString());
         // console.log(jsonData['index']);
@@ -100,35 +94,6 @@ wss1_cam_ai.on('connection', (ws, req) => {
             packet['indexes'] = [jsonData['index']];
         }
         console.log(`${packet['indexes']}, ${packet['indexes'].length}`);
-
-        // // 웹소켓 연결
-        // if (packet['indexes'].length >= 1) {
-        //     console.log('테스트 조건: 2개 이상의 데이터가 모였습니다.');
-
-        //     // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
-        //     let packet_data = JSON.stringify(packet);
-        //     // let packet_data = "Test packet data";
-        //     const chunkSize = 1000; // 글자수 n 단위로 분할
-
-        //     packet['indexes'].sort((a, b) => a - b);
-        //     wss2_python_pose_merge.clients.forEach(function each(client) {
-        //         if (client.readyState === WebSocket.OPEN) {
-        //             for (let i = 0; i < packet_data.length; i += chunkSize) {
-        //                 const chunk = packet_data.slice(i, i + chunkSize);
-        //                 client.send(JSON.stringify({chunk: chunk, last: i + chunkSize >= packet_data.length}));
-        //             }
-        //             // client.send(packet_data);
-        //         }
-        //         else if (client.readyState === WebSocket.CLOSED) {
-        //             console.log('client closed');
-        //         }
-        //         else if (client.readyState === WebSocket.CLOSING) {
-        //             console.log('client closing');
-        //         }
-        //     });
-
-        //     packet = {};
-        // }
     });
 
     ws.on('error', (error) => {
