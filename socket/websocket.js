@@ -1,13 +1,15 @@
 const WebSocket = require('ws');
 
-const p1_cam_ai_port = 8070;
+const p1_cam_port = 8060;
+const p1_ai_port = 8070;
 const p2_python_pose_merge_port = 8071;
 const p3_unity_obj_maker_port = 8072;
 const p4_python_img_merge_port = 8073;
 const p5_unity_main_port = 8074;
 const p6_unity_main2_port = 8075;
 
-const wss1_cam_ai = new WebSocket.Server({ port: p1_cam_ai_port });
+const wss0_cam = new WebSocket.Server({ port: p1_cam_port });
+const wss1_ai = new WebSocket.Server({ port: p1_ai_port });
 const wss2_python_pose_merge = new WebSocket.Server({ port: p2_python_pose_merge_port });
 const wss3_unity_object_maker = new WebSocket.Server({ port: p3_unity_obj_maker_port });
 const wss4_python_img_merge = new WebSocket.Server({ port: p4_python_img_merge_port });
@@ -41,7 +43,7 @@ function periodicTask() {
             if (client.readyState === WebSocket.OPEN) {
                 for (let i = 0; i < packet_data.length; i += chunkSize) {
                     const chunk = packet_data.slice(i, i + chunkSize);
-                    client.send(JSON.stringify({chunk: chunk, last: i + chunkSize >= packet_data.length}));
+                    client.send(JSON.stringify({ chunk: chunk, last: i + chunkSize >= packet_data.length }));
                 }
                 // client.send(packet_data);
             }
@@ -59,14 +61,72 @@ function periodicTask() {
 
 setInterval(periodicTask, funcInterval);
 
+function socket_chunk_message(message, wss) {
+    // message: str;
+    wss: WebSocket.Server;
+
+    // let packet_data = JSON.stringify(packet);
+    const chunkSize = 1000; // 글자수 n 단위로 분할
+
+    // 1. 받은 이미지를 python image merge 웹소켓으로 전달한다.
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            // client.send(message);
+            for (let i = 0; i < message.length; i += chunkSize) {
+                const chunk = message.slice(i, i + chunkSize);
+                client.send(JSON.stringify({ chunk: chunk, last: i + chunkSize >= message.length }));
+            }
+        }
+        else if (client.readyState === WebSocket.CLOSED) {
+            console.log('client closed');
+        }
+        else if (client.readyState === WebSocket.CLOSING) {
+            console.log('client closing');
+        }
+    });
+};
+
+function socket_message(message, wss) {
+    // message: str;
+    wss: WebSocket.Server;
+
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message.toString());
+        }
+    });
+
+};
+
+// 22 : AI 가공 웹소켓 연결시
+wss0_cam.on('connection', (ws, req) => {
+
+    const ip = req.headers;
+    // console.log('Python Cam Client connected', ip['host']);
+
+    // Send a welcome message to the client
+    // ws.send('Welcome to the WebSocket server! ', p2_python_pose_merge_port);
+    ws.on('message', (message) => {
+
+        socket_chunk_message(message, wss1_ai);
+
+    });
+    ws.on('error', (error) => {
+        console.error('error', error);
+    });
+    ws.on('close', () => {
+        console.log('8060 Python Websocket Client disconnected');
+    });
+});
+
 // 11 : webcam 이미지를 받는 웹소켓 연결시
-wss1_cam_ai.on('connection', (ws, req) => {
+wss1_ai.on('connection', (ws, req) => {
 
     const ip = req.headers;
     console.log('Cam AI WebSocket client connected', ip['host']);
 
     // Send a welcome message to the client
-    ws.send('Welcome to the WebSocket server! ', p1_cam_ai_port);
+    ws.send('Welcome to the WebSocket server! ', p1_ai_port);
     ws.on('message', (message) => {
 
         let jsonData = JSON.parse(message.toString());
@@ -118,12 +178,14 @@ wss2_python_pose_merge.on('connection', (ws, req) => {
         // const _time = new Date();
         // console.log(`ai >> object-maker [${_time}]`);
 
-        // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
-        wss3_unity_object_maker.clients.forEach(function each(client) {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(message.toString());
-            }
-        });
+        socket_message(message, wss3_unity_object_maker);
+
+        // // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
+        // wss3_unity_object_maker.clients.forEach(function each(client) {
+        //     if (client.readyState === WebSocket.OPEN) {
+        //         client.send(message.toString());
+        //     }
+        // });
     });
     ws.on('error', (error) => {
         console.error('error', error);
@@ -143,25 +205,27 @@ wss3_unity_object_maker.on('connection', (ws, req) => {
     ws.send('Welcome to the WebSocket server! ', p3_unity_obj_maker_port);
     ws.on('message', (message) => {
 
-        // let packet_data = JSON.stringify(packet);
-        const chunkSize = 1000; // 글자수 n 단위로 분할
+        socket_chunk_message(message, wss4_python_img_merge);
+        
+        // // let packet_data = JSON.stringify(packet);
+        // const chunkSize = 1000; // 글자수 n 단위로 분할
 
-        // 1. 받은 이미지를 python image merge 웹소켓으로 전달한다.
-        wss4_python_img_merge.clients.forEach(function each(client) {
-            if (client.readyState === WebSocket.OPEN) {
-                // client.send(message);
-                for (let i = 0; i < message.length; i += chunkSize) {
-                    const chunk = message.slice(i, i + chunkSize);
-                    client.send(JSON.stringify({chunk: chunk, last: i + chunkSize >= message.length}));
-                }
-            }
-            else if (client.readyState === WebSocket.CLOSED) {
-                console.log('client closed');
-            }
-            else if (client.readyState === WebSocket.CLOSING) {
-                console.log('client closing');
-            }
-        });
+        // // 1. 받은 이미지를 python image merge 웹소켓으로 전달한다.
+        // wss4_python_img_merge.clients.forEach(function each(client) {
+        //     if (client.readyState === WebSocket.OPEN) {
+        //         // client.send(message);
+        //         for (let i = 0; i < message.length; i += chunkSize) {
+        //             const chunk = message.slice(i, i + chunkSize);
+        //             client.send(JSON.stringify({ chunk: chunk, last: i + chunkSize >= message.length }));
+        //         }
+        //     }
+        //     else if (client.readyState === WebSocket.CLOSED) {
+        //         console.log('client closed');
+        //     }
+        //     else if (client.readyState === WebSocket.CLOSING) {
+        //         console.log('client closing');
+        //     }
+        // });
     });
 
     ws.on('error', (error) => {
@@ -182,11 +246,13 @@ wss4_python_img_merge.on('connection', (ws, req) => {
     ws.send('Welcome to the WebSocket server! ', p4_python_img_merge_port);
     ws.on('message', (message) => {
 
-        wss5_unity_main.clients.forEach(function each(client) {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
-            }
-        });
+        socket_message(message, wss5_unity_main);
+
+        // wss5_unity_main.clients.forEach(function each(client) {
+        //     if (client.readyState === WebSocket.OPEN) {
+        //         client.send(message);
+        //     }
+        // });
     });
 
     ws.on('error', (error) => {
@@ -206,11 +272,14 @@ wss5_unity_main.on('connection', (ws, req) => {
     ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
     ws.on('message', (message) => {
         // console.log('hello');
-        wss6_unity_main2.clients.forEach(function each(client) {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
-            }
-        });
+
+        socket_message(message, wss6_unity_main2);
+        
+        // wss6_unity_main2.clients.forEach(function each(client) {
+        //     if (client.readyState === WebSocket.OPEN) {
+        //         client.send(message);
+        //     }
+        // });
     });
 
     ws.on('error', (error) => {
