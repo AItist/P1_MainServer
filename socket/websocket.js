@@ -19,7 +19,7 @@ const wss6_unity_main2 = new WebSocket.Server({ port: p6_unity_main2_port });
 let packet = {};
 let p3_packet = {};
 
-let funcInterval = 300
+let funcInterval = 3000
 
 function periodicTask() {
     // console.log('This function runs every 1 seconds!');
@@ -108,7 +108,7 @@ function socket_message(message, wss, hostIP) {
 wss0_cam.on('connection', (ws, req) => {
 
     const ip = req.headers;
-    console.log('Python Cam Client connected', ip['host']);
+    // console.log('Python Cam Client connected', ip['host']);
 
     // Send a welcome message to the client
     // ws.send('Welcome to the WebSocket server! ', p2_python_pose_merge_port);
