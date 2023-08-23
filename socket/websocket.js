@@ -61,7 +61,7 @@ function periodicTask() {
 
 setInterval(periodicTask, funcInterval);
 
-function socket_chunk_message(message, wss) {
+function socket_chunk_message(message, wss, hostIP) {
     // message: str;
     wss: WebSocket.Server;
 
@@ -78,21 +78,27 @@ function socket_chunk_message(message, wss) {
             }
         }
         else if (client.readyState === WebSocket.CLOSED) {
-            console.log('client closed');
+            console.log(`${hostIP} client closed`);
         }
         else if (client.readyState === WebSocket.CLOSING) {
-            console.log('client closing');
+            console.log(`${hostIP} client closing`);
         }
     });
 };
 
-function socket_message(message, wss) {
+function socket_message(message, wss, hostIP) {
     // message: str;
     wss: WebSocket.Server;
 
     wss.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
             client.send(message.toString());
+        }
+        else if (client.readyState === WebSocket.CLOSED) {
+            console.log(`${hostIP} client closed`);
+        }
+        else if (client.readyState === WebSocket.CLOSING) {
+            console.log(`${hostIP} client closing`);
         }
     });
 
@@ -102,13 +108,14 @@ function socket_message(message, wss) {
 wss0_cam.on('connection', (ws, req) => {
 
     const ip = req.headers;
-    // console.log('Python Cam Client connected', ip['host']);
+    console.log('Python Cam Client connected', ip['host']);
 
     // Send a welcome message to the client
     // ws.send('Welcome to the WebSocket server! ', p2_python_pose_merge_port);
     ws.on('message', (message) => {
 
-        socket_chunk_message(message, wss1_ai);
+        // socket_chunk_message(message, wss1_ai, ip['host']);
+        socket_message(message, wss1_ai, ip['host']);
 
     });
     ws.on('error', (error) => {
@@ -178,7 +185,7 @@ wss2_python_pose_merge.on('connection', (ws, req) => {
         // const _time = new Date();
         // console.log(`ai >> object-maker [${_time}]`);
 
-        socket_message(message, wss3_unity_object_maker);
+        socket_message(message, wss3_unity_object_maker, ip['host']);
 
         // // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
         // wss3_unity_object_maker.clients.forEach(function each(client) {
@@ -205,7 +212,7 @@ wss3_unity_object_maker.on('connection', (ws, req) => {
     ws.send('Welcome to the WebSocket server! ', p3_unity_obj_maker_port);
     ws.on('message', (message) => {
 
-        socket_chunk_message(message, wss4_python_img_merge);
+        socket_chunk_message(message, wss4_python_img_merge, ip['host']);
         
         // // let packet_data = JSON.stringify(packet);
         // const chunkSize = 1000; // 글자수 n 단위로 분할
@@ -246,7 +253,7 @@ wss4_python_img_merge.on('connection', (ws, req) => {
     ws.send('Welcome to the WebSocket server! ', p4_python_img_merge_port);
     ws.on('message', (message) => {
 
-        socket_message(message, wss5_unity_main);
+        socket_message(message, wss5_unity_main, ip['host']);
 
         // wss5_unity_main.clients.forEach(function each(client) {
         //     if (client.readyState === WebSocket.OPEN) {
@@ -273,7 +280,7 @@ wss5_unity_main.on('connection', (ws, req) => {
     ws.on('message', (message) => {
         // console.log('hello');
 
-        socket_message(message, wss6_unity_main2);
+        socket_message(message, wss6_unity_main2, ip['host']);
         
         // wss6_unity_main2.clients.forEach(function each(client) {
         //     if (client.readyState === WebSocket.OPEN) {
