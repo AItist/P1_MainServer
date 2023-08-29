@@ -132,10 +132,11 @@ wss1_ai.on('connection', (ws, req) => {
     const ip = req.headers;
     console.log('Cam AI WebSocket client connected', ip['host']);
 
-    // Send a welcome message to the client
-    ws.send('Welcome to the WebSocket server! ', p1_ai_port);
+    // // Send a welcome message to the client
+    // ws.send('Welcome to the WebSocket server! ', p1_ai_port);
     ws.on('message', (message) => {
 
+        return;
         let jsonData = JSON.parse(message.toString());
         // console.log(jsonData['index']);
         // console.log()
@@ -178,8 +179,8 @@ wss2_python_pose_merge.on('connection', (ws, req) => {
     const ip = req.headers;
     console.log('Python Websocket Client connected', ip['host']);
 
-    // Send a welcome message to the client
-    ws.send('Welcome to the ai WebSocket server! ', p2_python_pose_merge_port);
+    // // Send a welcome message to the client
+    // ws.send('Welcome to the ai WebSocket server! ', p2_python_pose_merge_port);
     ws.on('message', (message) => {
         // 클라에서 데이터 전달받음
         // const _time = new Date();
