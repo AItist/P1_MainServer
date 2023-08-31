@@ -19,7 +19,7 @@ const wss6_unity_main2 = new WebSocket.Server({ port: p6_unity_main2_port });
 let packet = {};
 let p3_packet = {};
 
-let funcInterval = 3000
+let funcInterval = 300
 
 function periodicTask() {
     // console.log('This function runs every 1 seconds!');
@@ -107,8 +107,10 @@ function socket_message(message, wss, hostIP) {
 // 22 : AI 가공 웹소켓 연결시
 wss0_cam.on('connection', (ws, req) => {
 
-    const ip = req.headers;
+    // const ip = req.headers;
     // console.log('Python Cam Client connected', ip['host']);
+    const ip = req.socket.remoteAddress;
+    // console.log(`Connected client IP: ${ip}`);
 
     // Send a welcome message to the client
     // ws.send('Welcome to the WebSocket server! ', p2_python_pose_merge_port);
@@ -122,7 +124,7 @@ wss0_cam.on('connection', (ws, req) => {
         console.error('error', error);
     });
     ws.on('close', () => {
-        console.log('8060 Python Websocket Client disconnected');
+        console.log(`${ip} Python Websocket Client disconnected`);
     });
 });
 
@@ -136,7 +138,7 @@ wss1_ai.on('connection', (ws, req) => {
     // ws.send('Welcome to the WebSocket server! ', p1_ai_port);
     ws.on('message', (message) => {
 
-        return;
+        // return;
         let jsonData = JSON.parse(message.toString());
         // console.log(jsonData['index']);
         // console.log()
@@ -276,8 +278,8 @@ wss5_unity_main.on('connection', (ws, req) => {
     const ip = req.headers;
     console.log('Unity Main WebSocket client connected', ip['host']);
 
-    // Send a welcome message to the client
-    ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
+    // // Send a welcome message to the client
+    // ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
     ws.on('message', (message) => {
         // console.log('hello');
 
@@ -304,8 +306,8 @@ wss6_unity_main2.on('connection', (ws, req) => {
     const ip = req.headers;
     console.log('Unity Main2 WebSocket client connected', ip['host']);
 
-    // Send a welcome message to the client
-    ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
+    // // Send a welcome message to the client
+    // ws.send('Welcome to the WebSocket server! ', p5_unity_main_port);
     ws.on('message', (message) => {
         console.log('message', message.toString());
     });
