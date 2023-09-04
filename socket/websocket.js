@@ -19,7 +19,7 @@ const wss6_unity_main2 = new WebSocket.Server({ port: p6_unity_main2_port });
 let packet = {};
 let p3_packet = {};
 
-let funcInterval = 300
+let funcInterval = 5000
 
 function periodicTask() {
     // console.log('This function runs every 1 seconds!');
@@ -31,7 +31,7 @@ function periodicTask() {
 
     // 웹소켓 연결
     if (packet['indexes'].length >= 1) {
-        console.log('테스트 조건: 1개 이상의 데이터가 모였습니다.');
+        // console.log('테스트 조건: 1개 이상의 데이터가 모였습니다.');
 
         // 1. 받은 이미지를 바로 유니티와 연결된 웹소켓으로 전달한다.
         let packet_data = JSON.stringify(packet);
@@ -152,7 +152,7 @@ wss1_ai.on('connection', (ws, req) => {
 
         // 키 리스트 확인
         let keyList = Object.keys(packet);
-        console.log(keyList);
+        // console.log(keyList);
 
         if (packet.hasOwnProperty('indexes') && Array.isArray(packet['indexes'])) {
             // 배열에 0이 있으므로 추가하지 않음
@@ -163,7 +163,7 @@ wss1_ai.on('connection', (ws, req) => {
         } else {
             packet['indexes'] = [jsonData['index']];
         }
-        console.log(`${packet['indexes']}, ${packet['indexes'].length}`);
+        // console.log(`${packet['indexes']}, ${packet['indexes'].length}`);
     });
 
     ws.on('error', (error) => {
@@ -252,8 +252,8 @@ wss4_python_img_merge.on('connection', (ws, req) => {
     const ip = req.headers;
     console.log('python image merger WebSocket client connected', ip['host']);
 
-    // Send a welcome message to the client
-    ws.send('Welcome to the WebSocket server! ', p4_python_img_merge_port);
+    // // Send a welcome message to the client
+    // ws.send('Welcome to the WebSocket server! ', p4_python_img_merge_port);
     ws.on('message', (message) => {
 
         socket_message(message, wss5_unity_main, ip['host']);
@@ -268,6 +268,7 @@ wss4_python_img_merge.on('connection', (ws, req) => {
     ws.on('error', (error) => {
         console.error('error', error);
     });
+
     ws.on('close', () => {
         console.log('python image merger WebSocket client disconnected ', ip['host']);
     });
