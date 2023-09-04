@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const axios = require('axios');
 
 const p1_cam_port = 8060;
 const p1_ai_port = 8070;
@@ -273,6 +274,36 @@ wss4_python_img_merge.on('connection', (ws, req) => {
     });
 });
 
+// app.get('/init', async (req, res) => {
+//     try {
+//         // 다른 서버의 URL. 예를 들어, https://jsonplaceholder.typicode.com/todos/1
+//         const targetUrl1 = 'http://192.168.50.20:3001/init';
+//         // 해당 URL로 GET 요청을 보냅니다.
+//         const response1 = await axios.get(targetUrl1);
+
+//         // 다른 서버의 URL. 예를 들어, https://jsonplaceholder.typicode.com/todos/1
+//         const targetUrl2 = 'http://192.168.50.30:3002/init';
+//         // 해당 URL로 GET 요청을 보냅니다.
+//         const response2 = await axios.get(targetUrl2);
+
+//         // 다른 서버의 URL. 예를 들어, https://jsonplaceholder.typicode.com/todos/1
+//         const targetUrl3 = 'http://192.168.50.40:3003/init';
+//         // 해당 URL로 GET 요청을 보냅니다.
+//         const response3 = await axios.get(targetUrl3);
+
+//         // 다른 서버의 URL. 예를 들어, https://jsonplaceholder.typicode.com/todos/1
+//         const targetUrl4 = 'http://192.168.50.50:3004/init';
+//         // 해당 URL로 GET 요청을 보냅니다.
+//         const response4 = await axios.get(targetUrl4);
+
+//         // 응답을 클라이언트에 전달합니다.
+//         // res.json(response.data);
+//         res.sendStatus(200);
+//     } catch (error) {
+//         res.status(500).json({ message: 'Error fetching data' });
+//     }
+// });
+
 // 메인 Unity 웹소켓 연결시
 wss5_unity_main.on('connection', (ws, req) => {
     const ip = req.headers;
@@ -295,8 +326,18 @@ wss5_unity_main.on('connection', (ws, req) => {
     ws.on('error', (error) => {
         console.error('error', error);
     });
-    ws.on('close', () => {
+
+    ws.on('close', async (code, reason) => {
+        // console.log(`Connection closed with code ${code} and reason ${reason}`);
         console.log('Unity Main Websocket Client disconnected ', ip['host']);
+
+        try {
+            // 여기에서 다른 서버에 요청을 보냅니다.
+            const response = await axios.get('http://192.168.50.30:3002/start/21');
+            console.log('Response from other server:', response.data);
+        } catch (error) {
+            console.error('Error sending request to other server:', error.message);
+        }
     });
 });
 
