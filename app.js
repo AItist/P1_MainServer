@@ -24,6 +24,20 @@ app.get('/', (req, res) => {
     res.send('Hello, Express');
 });
 
+app.get('/exec', (req, res) => {
+    const exec = require('child_process').exec;
+    exec('D:\\hello.bat', function(error, stdout, stderr) {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+        // console.log(stdout);
+        // res.send(stdout);
+    });
+});
+
 app.listen(app.get('port'), () => {
     console.log('Server started on port', app.get('port'));
 });
