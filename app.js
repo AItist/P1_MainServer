@@ -28,17 +28,17 @@ app.get('/', (req, res) => {
 app.get('/init', async (req, res) => {
     try {
         // 다른 서버의 URL. 예를 들어, https://jsonplaceholder.typicode.com/todos/1
-        const targetUrl1 = '192.168.50.20:3001/init';
+        const targetUrl1 = 'http://192.168.50.20:3001/init';
         // 해당 URL로 GET 요청을 보냅니다.
         const response1 = await axios.get(targetUrl1);
 
         // 다른 서버의 URL. 예를 들어, https://jsonplaceholder.typicode.com/todos/1
-        const targetUrl2 = '192.168.50.30:3002/init';
+        const targetUrl2 = 'http://192.168.50.30:3002/init';
         // 해당 URL로 GET 요청을 보냅니다.
         const response2 = await axios.get(targetUrl2);
 
         // 다른 서버의 URL. 예를 들어, https://jsonplaceholder.typicode.com/todos/1
-        const targetUrl3 = '192.168.50.40:3003/init';
+        const targetUrl3 = 'http://192.168.50.40:3003/init';
         // 해당 URL로 GET 요청을 보냅니다.
         const response3 = await axios.get(targetUrl3);
 
