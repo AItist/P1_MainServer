@@ -327,19 +327,20 @@ wss5_unity_main.on('connection', (ws, req) => {
     ws.on('error', (error) => {
         console.error('error', error);
     });
-
     ws.on('close', async (code, reason) => {
         // console.log(`Connection closed with code ${code} and reason ${reason}`);
         console.log('Unity Main Websocket Client disconnected ', ip['host']);
-
         try {
             // 여기에서 다른 서버에 요청을 보냅니다.
-            const response = await axios.get('http://192.168.50.30:3002/start/21');
-            console.log('Response from other server:', response.data);
+            const response = await axios.get('http://192.168.0.30:3002/start/12');
+            // console.log('Response from other server:', response.data);
         } catch (error) {
             console.error('Error sending request to other server:', error.message);
         }
     });
+    // ws.on('close', () => {
+    //     console.log('Unity Main Websocket Client disconnected ', ip['host']);
+    // });
 });
 
 // 메인2 Unity 웹소켓 연결시
@@ -357,9 +358,20 @@ wss6_unity_main2.on('connection', (ws, req) => {
     ws.on('error', (error) => {
         console.error('error', error);
     });
-    ws.on('close', () => {
-        console.log('Unity Main2 Websocket Client disconnected ', ip['host']);
+    ws.on('close', async (code, reason) => {
+        // console.log(`Connection closed with code ${code} and reason ${reason}`);
+        console.log('Unity Main Websocket Client disconnected ', ip['host']);
+        try {
+            // 여기에서 다른 서버에 요청을 보냅니다.
+            const response = await axios.get('http://192.168.0.20:3001/start/15');
+            // console.log('Response from other server:', response.data);
+        } catch (error) {
+            console.error('Error sending request to other server:', error.message);
+        }
     });
+    // ws.on('close', () => {
+    //     console.log('Unity Main2 Websocket Client disconnected ', ip['host']);
+    // });
 });
 
 module.exports = wss2_python_pose_merge;
