@@ -20,7 +20,7 @@ const wss6_unity_main2 = new WebSocket.Server({ port: p6_unity_main2_port });
 let packet = {};
 let p3_packet = {};
 
-let funcInterval = 5000
+let funcInterval = 1000
 
 function periodicTask() {
     // console.log('This function runs every 1 seconds!');
